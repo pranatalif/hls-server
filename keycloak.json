@@ -1,6 +1,6 @@
 {
   "realm": "demo",
-  "auth-server-url": "http://localhost/auth/",
+  "auth-server-url": "http://localhost:8080/auth/",
   "ssl-required": "external",
   "resource": "nodejsdemoweb",
   "public-client": true,
