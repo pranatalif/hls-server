@@ -5,25 +5,12 @@ const bodyParser = require('body-parser')
 const session = require('express-session')
 const Keycloak = require('keycloak-connect')
 const proxy = require('express-http-proxy')
+const request = require('request')
 
 const app = express()
 app.use(bodyParser.json())
 
 app.use(cors())
-
-// function getRoute(req) {
-//     const route = req.route ? req.route.path : '' // check if the handler exist
-//     const baseUrl = req.baseUrl ? req.baseUrl : '' // adding the base url if the handler is a child of another handler
- 
-//     return route ? `${baseUrl === '/' ? '' : baseUrl}${route}` : 'unknown route'
-// }
-
-// app.use((req, res, next) => {
-//     res.on('finish', () => {
-//         console.log(`${req.method} ${req.url} ${res.statusCode}`) 
-//     })
-//     next()
-// })
 
 const memoryStore = new session.MemoryStore()
 
@@ -48,6 +35,16 @@ app.use(
     })
 )
 
+request.get('http://localhost:8080/', function (error, response, body) {
+  if (error || response.statusCode != 200) {
+    console.log(error) // Do something with your error
+  }
+
+  // If no errors, this code will be executed
+  // Write in file
+  
+})
+
 app.use(function(req, res, next) {
     //const { statusCode } = res
     res.header("Access-Control-Allow-Origin", "*")
@@ -59,13 +56,32 @@ app.use(function(req, res, next) {
         res.end()
         return
     }
+    next()
 })
+
+app.use('/node_modules/keycloak-js/', express.static('node_modules/keycloak-js'))
 
 app.use('/keycloak.json', express.static('keycloak.json'));
 
 app.use('/client.js', express.static('public/videos/client.js'));
 
 app.use('/', keycloak.protect(), express.static('public/videos'));
+
+app.use((req, res, next) => {
+    const error = new Error("Not found");
+    error.status = 404;
+    next(error);
+})
+
+// error handler middleware
+app.use((error, req, res, next) => {
+    res.status(error.status || 500).send({
+        error: {
+            status: error.status || 500,
+            message: error.message || 'Internal Server Error',
+        },
+    })
+})
 
 const port = process.env.PORT || 3000
 app.listen(port, () => console.log(`Listening on port ${port}...`))
