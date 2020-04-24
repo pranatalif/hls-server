@@ -35,7 +35,7 @@ app.use(
   })
 );
 
-request.get('http://localhost:8080/', function (error, response, body) {
+request.get('http://keycloak.gns3.fr:8080/', function (error, response, body) {
   if (error || response.statusCode != 200) {
     console.log(error); // Do something with your error
   }
